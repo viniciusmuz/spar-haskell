@@ -18,7 +18,7 @@ removerCartao pilha cartao =
 
 editarCartao:: Pilha -> Cartao.Cartao -> String -> String -> Pilha
 editarCartao pilha cartao frente verso = do
-    let cartao = Cartao.Cartao (Cartao.dataCriacao cartao) (Cartao.dataVencimento cartao) frente verso
+    let cartao = Cartao.Cartao (Cartao.dataCriacao cartao) (Cartao.dataVencimento cartao) (Cartao.fase cartao) frente verso
     let pilha = removerCartao pilha cartao
     Pilha (nome pilha) (cartoes pilha ++ [cartao])
 
@@ -36,4 +36,3 @@ cartoesVencidos pilha dia vencidos
         if dia >= Cartao.dataVencimento cartao
             then cartoesVencidos pilhaSemCartao dia (vencidos ++ [cartao])
             else cartoesVencidos pilhaSemCartao dia vencidos
-
