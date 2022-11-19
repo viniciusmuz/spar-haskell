@@ -33,6 +33,7 @@ cartoesVencidos pilha dia vencidos
     | otherwise = do
         let cartao = head (cartoes pilha)
         let pilhaSemCartao = removerCartao pilha cartao
-        if Cartao.dataCriacao cartao == Cartao.dataVencimento cartao
+        if dia >= Cartao.dataVencimento cartao
             then cartoesVencidos pilhaSemCartao dia (vencidos ++ [cartao])
             else cartoesVencidos pilhaSemCartao dia vencidos
+
