@@ -1,4 +1,4 @@
-module Util.TxtController where
+module Controllers.TxtController where
   import System.IO
   import System.Directory
   import Models.Pilha
