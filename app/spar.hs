@@ -14,11 +14,10 @@ module Main where
   welcome :: String
   welcome = "*** Bem-vindo ao Spar! ***" ++ "\n" ++ 
           "Digite a letra correspondente à ação que você deseja executar\n" ++
-          "[E]studar\n" ++
-          "[A]dicionar cartões\n" ++
-          "[R]emover cartões\n" ++
-          "[M]odificar cartões\n" ++
-          "[C]ustomizar intervalos dos cartões\n" ++
+          "[C]Criar Pilha\n"++
+          "[R]Remover Pilha\n"++
+          "[D]Editar Pilha\n" ++
+          "[E]Estudar\n" ++
           putLine
 
   main :: IO()  
@@ -28,11 +27,10 @@ module Main where
     menuOptions (map toUpper input)
 
   menuOptions:: String -> IO ()
-  menuOptions option |option == "E" = print("studyMenu") 
-                     |option == "A" = choosePilhaMenu option
-                     |option == "R" = choosePilhaMenu option
-                     |option == "M" = choosePilhaMenu option
-                     |option == "C" = print("Opção ainda em desenvolvimento") 
+  menuOptions option |option == "E" = choosePilhaMenu 
+                     |option == "C" = createPilha 
+                     |option == "D" = choosePilhaMenu 
+                     |option == "R" = choosePilhaMenu
                      |otherwise = errorMenu  
 
   mainMenu:: IO()
@@ -43,18 +41,17 @@ module Main where
           menuOptions (map toUpper option)
   
 
-  
-  directMenu:: Pilha -> String -> IO()
-  directMenu pilha string |string == "E" = print("studyMenu")
-                          |string == "A" = addCardPilhaMenu pilha
-                          |string == "R" = print("opção ainda em dev")
-                          |string == "M" = print("opção ainda em dev")
-                          |string == "C" = print("opção ainda em dev")  
+  operationsPilha:: Pilha -> String -> IO()
+  operationsPilha pilha input |input == "A" = addCardPilha pilha
+                              |input == "E" = editCardPilha pilha (cartoes pilha)
+                              |input == "R" = choosePilhaMenu
+                              |input == "X" = mainMenu
+                              |otherwise = errorMenu
 
-  choosePilhaMenu:: String -> IO ()
-  choosePilhaMenu opcao = do
+  choosePilhaMenu:: IO ()
+  choosePilhaMenu = do
     putStrLn "> Escolha o número da pilha onde deseja realizar a operação: "
-    numPilha <- readLn 
+    numPilha <- readLn
     db <- loadDB
     putStrLn ""
 
@@ -63,13 +60,25 @@ module Main where
         putStrLn putLine
         let pilha = db!!(numPilha-1)
         putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
-        directMenu pilha opcao
+        print(pilha)
+        putStrLn "[A] Add carta [E] Editar Card  [R] Remover deck             [X] Voltar\n"
+        option <- getLine
+        putStrLn ""
+        operationsPilha pilha option
       False -> do
         putStrLn "\n# Número da pilha inválido inválido #\n"
-        choosePilhaMenu opcao
+        choosePilhaMenu
   
-  addCardPilhaMenu:: Pilha -> IO ()
-  addCardPilhaMenu pilha = do
+  createPilha:: IO ()
+  createPilha = do
+    putStrLn "Digite o nome da pilha:"
+    namePilha <- getLine
+    addAndSave namePilha
+    putStrLn "\nPilha criada com sucesso!\n"
+    mainMenu
+
+  addCardPilha:: Pilha -> IO ()
+  addCardPilha pilha = do
     putStrLn putLine
     putStrLn "> Qual será a frente da carta?"
     front <- getLine
@@ -90,8 +99,36 @@ module Main where
     let editedPilha = adicionarCartao pilha newCard
     editPilhaAndSave (nome editedPilha) (cartoes editedPilha) 
     putStrLn "\nCarta adicionada com sucesso!\n"
-    mainMenu 
+    mainMenu
+
+  editCardPilha:: Pilha -> [Cartao] -> IO()
+  editCardPilha pilha cards = do
+    putStrLn putLine
+    print(show (nome pilha))
+    putStrLn ""
+    print(cards)
+    putStrLn "Escolha o cartão que deseja editar: "
+    numCartao <- readLn
+    case (numCartao > 0 && numCartao <= length cards) of
+      True -> do
+        putStrLn putLine
+        let cartao = cards!!(numCartao-1)
+        putStrLn "> Qual será a frente da carta?"
+        novaFrente <- getLine
+
+        putStrLn "\n> Qual será o verso da carta?"
+        novoVerso <- getLine
+        
+        let editedPilha = editarCartao pilha cartao novaFrente novoVerso
+        print(show(nome editedPilha))
+        editPilhaAndSave (nome editedPilha) (cartoes editedPilha)
+        putStrLn "\nCarta editada com sucesso!\n" 
+        mainMenu
+      False -> do 
+        putStrLn "\n# Número do Cartão é inválido #\n"
+        editCardPilha pilha cards
   
+
   errorMenu:: IO()
   errorMenu = do
     putStrLn "################# Opção inválida! #################\n"

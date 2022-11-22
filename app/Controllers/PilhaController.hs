@@ -22,6 +22,12 @@ module Controllers.PilhaController where
     let addedList = db ++ [pilha]
     return addedList
 
+  procuraPilha :: [String] -> String -> Int
+  procuraPilha [] n = -1
+  procuraPilha (a:xs) n = do
+    if a == n then 0
+    else 1 + procuraPilha xs n
+    
 
   class CanAdd v where
     addAndSave :: v -> IO [Pilha]
@@ -36,26 +42,35 @@ module Controllers.PilhaController where
       writeDB addedList
       return addedList
 
+  class CanSearch v where
+    -- |Searches a Deck in the database, by name.
+    search :: v -> IO Pilha
+  instance CanSearch String where
+    search nameToSearch = do
+      db <- loadDB
+      let m = filter (nameToSearch >-=) db
+      return (if null m then Pilha { nome="NIL", cartoes=[] } else head m)
+
   class CanEditPilhaNameAndSave v1 v2 where
     editPilhaAndSave :: v1 -> v2 -> IO [Pilha]
   instance CanEditPilhaNameAndSave String String where
     editPilhaAndSave pilhaName newPilhaName = do
-      pilha <- editPilha pilhaName newPilhaName
+      pilha <- editaPilha pilhaName newPilhaName
       writeDB pilha
       return pilha
   instance CanEditPilhaNameAndSave String [Cartao] where
     editPilhaAndSave pilhaName newCards = do
-      pilha <- editPilha pilhaName newCards
+      pilha <- editaPilha pilhaName newCards
       writeDB pilha
       return pilha
 
   
   class CanEditPilhaName v1 v2 where
-    editPilha :: v1 -> v2 -> IO [Pilha]
+    editaPilha :: v1 -> v2 -> IO [Pilha]
   instance CanEditPilhaName String String where
-    editPilha pilhaName newPilhaName = do
+    editaPilha pilhaName newPilhaName = do
       db <- loadDB
-      let dbAsNames = map nome db
+      let dbAsNames = (map nome db)
       let idx = fromMaybe (-1) (elemIndex pilhaName dbAsNames)
       if idx == -1 then (do
         print "Index doesn't exists"
@@ -68,15 +83,30 @@ module Controllers.PilhaController where
 
 
   instance CanEditPilhaName String [Cartao] where
-    editPilha pilhaName newCards = do
+    editaPilha pilhaName newCards = do
       db <- loadDB
       let dbAsNames = map nome db
-      let idx = fromMaybe (-1) (elemIndex pilhaName dbAsNames)
-      if idx == -1 then (do
+      if ((procuraPilha dbAsNames pilhaName) == -1) then do
         putStrLn "Couldn't find the Pilha"
-        return db) else (do
+        return db
+      else do
+        let idx = procuraPilha dbAsNames pilhaName
+        putStrLn "cheguei aq444"
         let oldElm = db!!idx
+        putStrLn "cheguei aq5"
         let newElm = Pilha { nome=nome oldElm, cartoes=newCards }
+        putStrLn "cheguei aq6"
         let (s, _:end) = splitAt idx db
+        putStrLn "cheguei aq7"
         let newDb = s ++ newElm : end
-        return newDb)
+        putStrLn "cheguei aq8"
+        return newDb
+
+  (>-=) :: String -> Pilha -> Bool
+  (>-=) cName deck = cName == nome deck
+
+  -- |Returns true if both decks are equals
+  (>==) :: Pilha -> Pilha -> Bool
+  -- TODO: Há alguma especificidade para implementar aqui?
+  (>==) deck1 deck2 = deck1 == deck2
+      

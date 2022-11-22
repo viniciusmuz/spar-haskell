@@ -18,9 +18,9 @@ removerCartao pilha cartao =
 
 editarCartao:: Pilha -> Cartao.Cartao -> String -> String -> Pilha
 editarCartao pilha cartao frente verso = do
-    let cartao = Cartao.Cartao (Cartao.dataCriacao cartao) (Cartao.dataVencimento cartao) frente verso
-    let pilha = removerCartao pilha cartao
-    Pilha (nome pilha) (cartoes pilha ++ [cartao])
+    let editedCartao = Cartao.Cartao (Cartao.dataCriacao cartao) (Cartao.dataVencimento cartao) frente verso
+    let editedPilha = removerCartao pilha cartao
+    Pilha (nome editedPilha) (cartoes editedPilha ++ [editedCartao])
 
 atualizarCartao:: Pilha -> Cartao.Cartao -> Cartao.Cartao -> Pilha
 atualizarCartao pilha cartaoAntigo cartaoNovo = do
