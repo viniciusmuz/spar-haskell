@@ -23,6 +23,10 @@ module Main where
   main :: IO()  
   main = do
     putStrLn welcome
+    
+    menu <- menuPilhas
+    putStrLn menu
+
     input <- getLine
     menuOptions (map toUpper input)
 
@@ -36,6 +40,10 @@ module Main where
   mainMenu:: IO()
   mainMenu = do
           putStrLn initialMenu
+          
+          menu <- menuPilhas
+          putStrLn menu
+          
           option <- getLine
           putStrLn ""
           menuOptions (map toUpper option)
@@ -44,7 +52,7 @@ module Main where
   operationsPilha:: Pilha -> String -> IO()
   operationsPilha pilha input |input == "A" = addCardPilha pilha
                               |input == "E" = editCardPilha pilha (cartoes pilha)
-                              |input == "R" = choosePilhaMenu
+                              |input == "R" = removePilha pilha
                               |input == "X" = mainMenu
                               |otherwise = errorMenu
 
@@ -61,7 +69,7 @@ module Main where
         let pilha = db!!(numPilha-1)
         putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
         print(pilha)
-        putStrLn "[A] Add carta [E] Editar Card  [R] Remover deck             [X] Voltar\n"
+        putStrLn "[A] Add carta [E] Editar Carta  [R] Remover Pilha             [X] Voltar\n"
         option <- getLine
         putStrLn ""
         operationsPilha pilha option
@@ -77,6 +85,20 @@ module Main where
     putStrLn "\nPilha criada com sucesso!\n"
     mainMenu
 
+  
+  removePilha:: Pilha -> IO ()
+  removePilha pilha = do
+    putStrLn "\n> Tem certeza que deseja remover a pilha? [Y]"
+    option <- getLine 
+    case (map toUpper option) == "Y" of
+      True -> do
+        removeAndSave pilha
+        putStrLn "\nO pilha foi removido com sucesso!\n"
+        mainMenu
+      False -> do
+        mainMenu
+
+  
   addCardPilha:: Pilha -> IO ()
   addCardPilha pilha = do
     putStrLn putLine
@@ -95,7 +117,7 @@ module Main where
     let vencimentoDay = toEnum vencimento
     let criacaoDay = toEnum criacao
 
-    let newCard = Cartao criacaoDay vencimentoDay front back
+    let newCard = Cartao criacaoDay vencimentoDay 0 front back
     let editedPilha = adicionarCartao pilha newCard
     editPilhaAndSave (nome editedPilha) (cartoes editedPilha) 
     putStrLn "\nCarta adicionada com sucesso!\n"

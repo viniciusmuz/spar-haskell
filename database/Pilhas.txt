@@ -1,1 +1,1 @@
-[Pilha {nome = "Ingles", cartoes = [Cartao {dataCriacao = 1858-11-27, dataVencimento = 1858-12-07, frente = "AUGUSTO", verso = "ESQUISITO"}]}]
+[Pilha {nome = "ALE", cartoes = []},Pilha {nome = "MAmE", cartoes = []},Pilha {nome = "MEOEDS", cartoes = []}]

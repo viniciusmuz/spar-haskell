@@ -42,6 +42,38 @@ module Controllers.PilhaController where
       writeDB addedList
       return addedList
 
+  class CanRemove v where
+    -- |Removes a Deck from database, but doesn\'t removes it from database, instead it does just returns it, while this deck can be searched by name (receiving a 'String') or by a proper 'Models.Deck'.
+    remove :: v -> IO [Pilha]
+  instance CanRemove String where
+    remove nameToSearch = do
+      db <- loadDB
+      pilha <- search nameToSearch
+      let pilhas = filter (\deckToCompare -> not (pilha >== deckToCompare)) db
+      return pilhas
+  instance CanRemove Pilha where
+    remove pilha = do
+      db <- loadDB
+      let pilhas = filter (\deckToCompare -> not (pilha >== deckToCompare)) db
+      return pilhas
+
+  class CanRemoveAndSave v where
+    -- |Removes a Deck from database permanently, while this deck can be searched by name (receiving a 'String') or by a proper 'Models.Deck'.
+    --
+    -- This action will carry changes to 'database/Decks.txt'.
+    removeAndSave :: v -> IO [Pilha]
+  instance CanRemoveAndSave String where
+    removeAndSave nameToSearch = do
+      pilhas <- remove nameToSearch
+      writeDB pilhas
+      return pilhas
+  instance CanRemoveAndSave Pilha where
+    removeAndSave deck = do
+      pilhas <- remove deck
+      writeDB pilhas
+      return pilhas
+
+
   class CanSearch v where
     -- |Searches a Deck in the database, by name.
     search :: v -> IO Pilha
