@@ -8,6 +8,7 @@ module Controllers.PilhaController where
   import Data.Maybe (fromMaybe)
   import Models.Pilha
   import Models.Cartao
+  import System.Random (getStdGen, randomRIO)
 
 
   getPilhaNames :: IO [String]
@@ -123,16 +124,40 @@ module Controllers.PilhaController where
         return db
       else do
         let idx = procuraPilha dbAsNames pilhaName
-        putStrLn "cheguei aq444"
         let oldElm = db!!idx
-        putStrLn "cheguei aq5"
         let newElm = Pilha { nome=nome oldElm, cartoes=newCards }
-        putStrLn "cheguei aq6"
         let (s, _:end) = splitAt idx db
-        putStrLn "cheguei aq7"
         let newDb = s ++ newElm : end
-        putStrLn "cheguei aq8"
         return newDb
+
+  rndElem :: [a] -> IO a
+  rndElem xs = do
+    index <- randomRIO (0, length xs - 2)
+    return $ xs !! index
+
+  rndPermutation :: [a] -> IO [a]
+  rndPermutation = rndElem . permutations
+
+  class CanShufflePilha a where
+    shufflePilha :: a -> IO [Pilha]
+  instance CanShufflePilha Pilha where
+    shufflePilha pilha = do
+      db <- loadDB
+      foundPilha <- search (nome pilha)
+      if length (cartoes foundPilha) < 2 then (do loadDB)
+        else (do
+        shuffledPilha <- rndPermutation (cartoes foundPilha)
+        editaPilha (nome pilha) shuffledPilha
+        )
+  instance CanShufflePilha String where
+    shufflePilha pilhaNome = do
+      db <- loadDB
+      foundPilha <- search pilhaNome
+      if length (cartoes foundPilha) < 2 then (do loadDB)
+        else (do
+        shuffledPilha <- rndPermutation (cartoes foundPilha)
+        editaPilha pilhaNome shuffledPilha
+        )
 
   class CanShufflePilhaAndSave a where
     shufflePilhaAndSave :: a -> IO [Pilha]

@@ -2,6 +2,7 @@ module Main where
   import Controllers.TxtController
   import Controllers.InterfaceController
   import Controllers.PilhaController
+  import Controllers.SessaoController
   import Models.Pilha
   import Models.Cartao
   import Models.Sessao
@@ -10,36 +11,47 @@ module Main where
   import Data.Time.Clock
   import Data.Time.Calendar
   import Data.Time.Calendar.OrdinalDate
+  
+  hoje = 59883
 
   welcome :: String
   welcome = "*** Bem-vindo ao Spar! ***" ++ "\n" ++ 
           "Digite a letra correspondente à ação que você deseja executar\n" ++
-          "[C]Criar Pilha\n"++
-          "[R]Remover Pilha\n"++
-          "[D]Editar Pilha\n" ++
-          "[E]Estudar\n" ++
+          "[C]Criar Pilha\n"++ -- FEITO
+          "[R]Remover Pilha\n"++ -- FEITO
+          "[D]Editar Pilha\n" ++ -- FEITO
+          "[E]Estudar\n" ++ -- FAZENDO
           putLine
 
   main :: IO()  
   main = do
+    putStrLn "Para começar, digite a data de hoje: \n"
+    date <- readLn :: IO Int
+    putStrLn "Agora digite o número correspondente ao mês atual: \n"
+    mes <- readLn :: IO Int
+    let hojeDay = verifyMonth date mes
+    let dataHoje = toEnum (hojeDay + hoje)
+    putStrLn putLine
+    let sessao = Sessao dataHoje []
+    writeDBSessao [sessao]
+
     putStrLn welcome
     
-
     menu <- menuPilhas
     putStrLn menu
 
     input <- getLine
-    menuOptions (map toUpper input)
+    menuOptions sessao (map toUpper input)
 
-  menuOptions:: String -> IO ()
-  menuOptions option |option == "E" = choosePilhaMenu 
-                     |option == "C" = createPilha 
-                     |option == "D" = choosePilhaMenu 
-                     |option == "R" = choosePilhaMenu
-                     |otherwise = errorMenu  
+  menuOptions:: Sessao -> String -> IO ()
+  menuOptions sessao option |option == "E" = studyPilhaMenu sessao -- FAZENDO 
+                            |option == "C" = createPilha sessao
+                            |option == "D" = choosePilhaMenu sessao
+                            |option == "R" = choosePilhaMenu sessao
+                            |otherwise = errorMenu sessao
 
-  mainMenu:: IO()
-  mainMenu = do
+  mainMenu:: Sessao -> IO()
+  mainMenu sessao = do
           putStrLn initialMenu
           
           menu <- menuPilhas
@@ -47,19 +59,20 @@ module Main where
           
           option <- getLine
           putStrLn ""
-          menuOptions (map toUpper option)
+          menuOptions sessao (map toUpper option)
   
 
-  operationsPilha:: Pilha -> String -> IO()
-  operationsPilha pilha input |input == "A" = addCardPilha pilha
-                              |input == "E" = editCardPilha pilha (cartoes pilha)
-                              |input == "R" = removePilha pilha
-                              |input == "X" = mainMenu
-                              |otherwise = errorMenu
+  operationsPilha:: Sessao -> Pilha -> String -> IO()
+  operationsPilha sessao pilha input |input == "A" = addCardPilha sessao pilha
+                                      |input == "E" = editCardPilha sessao pilha (cartoes pilha)
+                                      |input == "R" = removePilha sessao pilha
+                                      |input == "X" = mainMenu sessao
+                                      |otherwise = errorMenu sessao
 
-  studyPilhaMenu:: IO()
+  studyPilhaMenu:: Sessao -> IO()
+  studyPilhaMenu sessao = do
     putStrLn "> Escolha o número da pilha que deseja estudar: "
-    numPilha <- readLn
+    numPilha <- readLn :: IO Int
     db <- loadDB
     putStrLn ""
 
@@ -69,13 +82,13 @@ module Main where
         let pilha = db!!(numPilha-1)
         putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
         print(pilha)
-        chooseCardMenu pilha (cartoes pilha)
+        chooseCardMenu sessao pilha (cartoes pilha)
       False -> do
         putStrLn "\n# Número da pilha inválido inválido #\n"
-        choosePilhaMenu
+        choosePilhaMenu sessao
 
-  choosePilhaMenu:: IO ()
-  choosePilhaMenu = do
+  choosePilhaMenu:: Sessao -> IO ()
+  choosePilhaMenu sessao = do
     putStrLn "> Escolha o número da pilha onde deseja realizar a operação: "
     numPilha <- readLn
     db <- loadDB
@@ -90,31 +103,31 @@ module Main where
         putStrLn "[A] Add carta [E] Editar Carta  [R] Remover Pilha             [X] Voltar\n"
         option <- getLine
         putStrLn ""
-        operationsPilha pilha option
+        operationsPilha sessao pilha option
       False -> do
         putStrLn "\n# Número da pilha inválido inválido #\n"
-        choosePilhaMenu
+        choosePilhaMenu sessao
   
-  createPilha:: IO ()
-  createPilha = do
+  createPilha:: Sessao -> IO ()
+  createPilha sessao = do
     putStrLn "Digite o nome da pilha:"
     namePilha <- getLine
     addAndSave namePilha
     putStrLn "\nPilha criada com sucesso!\n"
-    mainMenu
+    mainMenu sessao
 
   
-  removePilha:: Pilha -> IO ()
-  removePilha pilha = do
+  removePilha:: Sessao -> Pilha -> IO ()
+  removePilha sessao pilha = do
     putStrLn "\n> Tem certeza que deseja remover a pilha? [Y]"
     option <- getLine 
     case (map toUpper option) == "Y" of
       True -> do
         removeAndSave pilha
         putStrLn "\nO pilha foi removido com sucesso!\n"
-        mainMenu
+        mainMenu sessao
       False -> do
-        mainMenu
+        mainMenu sessao
 
   verifyMonth:: Int -> Int -> Int
   verifyMonth criacao mes |mes == 1 = criacao + 61
@@ -127,11 +140,11 @@ module Main where
                           |mes == 8 = criacao + 273
                           |mes == 9 = criacao + 303
                           |mes == 10 = criacao + 334
-                          |mes == 11 = criacao + 265
+                          |mes == 11 = criacao
                           |mes == 12 = criacao + 30
 
-  addCardPilha:: Pilha -> IO ()
-  addCardPilha pilha = do
+  addCardPilha:: Sessao -> Pilha -> IO ()
+  addCardPilha sessao pilha = do
     putStrLn putLine
     putStrLn "> Qual será a frente da carta?"
     front <- getLine
@@ -156,10 +169,10 @@ module Main where
     let editedPilha = adicionarCartao pilha newCard
     editPilhaAndSave (nome editedPilha) (cartoes editedPilha) 
     putStrLn "\nCarta adicionada com sucesso!\n"
-    mainMenu
+    mainMenu sessao
 
-  editCardPilha:: Pilha -> [Cartao] -> IO()
-  editCardPilha pilha cards = do
+  editCardPilha:: Sessao -> Pilha -> [Cartao] -> IO()
+  editCardPilha sessao pilha cards = do
     putStrLn putLine
     print(show (nome pilha))
     putStrLn ""
@@ -180,30 +193,68 @@ module Main where
         print(show(nome editedPilha))
         editPilhaAndSave (nome editedPilha) (cartoes editedPilha)
         putStrLn "\nCarta editada com sucesso!\n" 
-        mainMenu
+        mainMenu sessao
       False -> do 
         putStrLn "\n# Número do Cartão é inválido #\n"
-        editCardPilha pilha cards
+        editCardPilha sessao pilha cards
   
-  chooseCardMenu:: Pilha -> [Cartoes]-> IO()
-  chooseCardMenu pilha cards = do
+  chooseCardMenu:: Sessao -> Pilha -> [Cartao]-> IO()
+  chooseCardMenu sessao pilha cards = do
     pilhaSearch <- search (nome pilha)
     case (length (cartoes pilhaSearch)) == 0 of
       True -> do
         putStrLn putLine
         putStrLn "              Essa não possui cartões:(           \n"
-        mainMenu
+        mainMenu sessao
       False -> do  
-        studyCards pilha cards
+        studyCards sessao pilha cards
 
-  studyCard:: Pilha -> [Cartao] -> IO()
-  studyCard pilha cartoes = do
+  getFase:: [Cartao] -> Int -> [Cartao]
+  getFase [] fase = []
+  getFase (a:xs) fase = do
+    if (fase ) == 0 then [a] ++ getFase xs fase
+    else getFase xs fase
+
+  studyCards:: Sessao -> Pilha -> [Cartao] -> IO()
+  studyCards sessao pilha cartoes = do
+    shufflePilhaAndSave pilha
     
+    let headCartao = head cartoes
+    putStrLn "Aperte enter para ver a frente do cartão: "
+    getLine
+    print (frente headCartao)
+    putStrLn putLine
+    putStrLn "Aperte enter para ver o verso do cartão: "
+    getLine
+    print (verso headCartao)
+    putStrLn putLine
+    putStrLn "[A]certei!\n[E]rrei :(\n "
+    input <- getLine
+    if (map toUpper input) == "A" then do
+      let newPilha = addFase headCartao pilha 
+      editSessaoAndSave (dataEstudo sessao) ((cartoesEstudados sessao) ++ [headCartao])
+      studyCards (searchSessao (dataEstudo sessao)) newPilha (cartoes newPilha)
+    else do
+      putStrLn "Você errou"
+      studyPilhaMenu (searchSessao (dataEstudo sessao))
+
+  addFase :: Cartao -> Pilha -> Pilha
+  addFase cartao pilha = do
+    if (fase cartao) == 4 then do
+      let newPilha = removerCartao pilha cartao
+      return editPilhaAndSave (nome newPilha) (cartoes newPilha)
+    else do
+      let newCard = Cartao (dataCriacao cartao) (dataVencimento cartao) ((fase cartao) + 1) (frente cartao) (verso cartao)
+      let newPilha = editarCartao pilha cartao (frente cartao) (verso cartao)
+      return editPilhaAndSave (nome newPilha) (cartoes newPilha)
     
-  errorMenu:: IO()
-  errorMenu = do
+
+
+    
+  errorMenu:: Sessao -> IO()
+  errorMenu sessao = do
     putStrLn "################# Opção inválida! #################\n"
-    mainMenu
+    mainMenu sessao
 
   date :: IO (Integer, Int, Int) -- :: (year, month, day)
   date = getCurrentTime >>= return . toGregorian . utctDay

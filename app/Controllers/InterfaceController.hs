@@ -24,6 +24,6 @@ module Controllers.InterfaceController where
                 return "Você não possui pilhas"
             False -> do
                 let numberedPilhas = zipWith (\n line -> show n ++ " - " ++ line) [1..] namesPilhas
-                let list = ("Seus decks:\n" : numberedPilhas)
+                let list = ("Suas pilhas:\n" : numberedPilhas)
                 let menuString = unlines list
                 return menuString            

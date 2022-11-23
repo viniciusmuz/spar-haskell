@@ -4,7 +4,7 @@ module Models.Cartao where
     data Cartao = Cartao {
         dataCriacao:: Day,
         dataVencimento:: Day,
-        fase:: Integer,
+        fase:: Int,
         frente:: String,
         verso:: String
     } deriving (Show, Read, Eq)
