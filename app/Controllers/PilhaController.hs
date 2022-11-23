@@ -134,8 +134,21 @@ module Controllers.PilhaController where
         putStrLn "cheguei aq8"
         return newDb
 
+  class CanShufflePilhaAndSave a where
+    shufflePilhaAndSave :: a -> IO [Pilha]
+  instance CanShufflePilhaAndSave Pilha where
+    shufflePilhaAndSave pilha = do
+      newDb <- shufflePilha pilha
+      writeDB newDb
+      return newDb
+  instance CanShufflePilhaAndSave String where
+    shufflePilhaAndSave pilhaName = do
+      newDb <- shufflePilha pilhaName
+      writeDB newDb
+      return newDb
+
   (>-=) :: String -> Pilha -> Bool
-  (>-=) cName deck = cName == nome deck
+  (>-=) cName pilha = cName == nome pilha
 
   -- |Returns true if both decks are equals
   (>==) :: Pilha -> Pilha -> Bool

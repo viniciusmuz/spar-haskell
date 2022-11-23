@@ -24,7 +24,7 @@ module Main where
   main = do
     putStrLn welcome
     
-    
+
     menu <- menuPilhas
     putStrLn menu
 
@@ -56,6 +56,23 @@ module Main where
                               |input == "R" = removePilha pilha
                               |input == "X" = mainMenu
                               |otherwise = errorMenu
+
+  studyPilhaMenu:: IO()
+    putStrLn "> Escolha o número da pilha que deseja estudar: "
+    numPilha <- readLn
+    db <- loadDB
+    putStrLn ""
+
+    case (numPilha > 0 && numPilha <= length db) of
+      True -> do
+        putStrLn putLine
+        let pilha = db!!(numPilha-1)
+        putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
+        print(pilha)
+        chooseCardMenu pilha (cartoes pilha)
+      False -> do
+        putStrLn "\n# Número da pilha inválido inválido #\n"
+        choosePilhaMenu
 
   choosePilhaMenu:: IO ()
   choosePilhaMenu = do
@@ -168,19 +185,20 @@ module Main where
         putStrLn "\n# Número do Cartão é inválido #\n"
         editCardPilha pilha cards
   
-  --chooseCardMenu:: Pilha -> [Cartoes]-> IO()
-  --chooseCardMenu pilha cards = do
-  --  pilhaSearch <- search (nome pilha)
-  --  case (length (cartoes pilhaSearch)) == 0 of
-  --    True -> do
-  --      putStrLn putLine
-  --     putStrLn "              Esse pilha está vazia :(           \n"
-  --      mainMenu
-  --   False -> do  
-  --      studyCards pilha cards
+  chooseCardMenu:: Pilha -> [Cartoes]-> IO()
+  chooseCardMenu pilha cards = do
+    pilhaSearch <- search (nome pilha)
+    case (length (cartoes pilhaSearch)) == 0 of
+      True -> do
+        putStrLn putLine
+        putStrLn "              Essa não possui cartões:(           \n"
+        mainMenu
+      False -> do  
+        studyCards pilha cards
 
-  --studyCard:: Pilha -> [Cartao] -> IO()
-  --studyCard pilha cartoes = do
+  studyCard:: Pilha -> [Cartao] -> IO()
+  studyCard pilha cartoes = do
+    
     
   errorMenu:: IO()
   errorMenu = do
