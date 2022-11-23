@@ -24,6 +24,7 @@ module Main where
   main = do
     putStrLn welcome
     
+    
     menu <- menuPilhas
     putStrLn menu
 
@@ -98,7 +99,20 @@ module Main where
       False -> do
         mainMenu
 
-  
+  verifyMonth:: Int -> Int -> Int
+  verifyMonth criacao mes |mes == 1 = criacao + 61
+                          |mes == 2 = criacao + 92
+                          |mes == 3 = criacao + 120
+                          |mes == 4 = criacao + 151
+                          |mes == 5 = criacao + 181
+                          |mes == 6 = criacao + 212
+                          |mes == 7 = criacao + 242
+                          |mes == 8 = criacao + 273
+                          |mes == 9 = criacao + 303
+                          |mes == 10 = criacao + 334
+                          |mes == 11 = criacao + 265
+                          |mes == 12 = criacao + 30
+
   addCardPilha:: Pilha -> IO ()
   addCardPilha pilha = do
     putStrLn putLine
@@ -108,15 +122,19 @@ module Main where
     putStrLn "\n> Qual será o verso da carta?"
     back <- getLine
 
-    putStrLn "\n> Qual o dia de hj"
-    criacao <- readLn :: IO Int
+    putStrLn "\n> Qual o data de hoje? "
+    dia <- readLn :: IO Int
 
-    putStrLn "\n> Qual será o dia de vencimento carta?"
+    putStrLn "\n> Qual o mês atual? (Janeiro = 1, Fevereiro = 2,...) "
+    mes <- readLn :: IO Int
+
+    putStrLn "\n> Quanto dias essa carta deve durar? "
     vencimento <- readLn :: IO Int
-    
-    let vencimentoDay = toEnum vencimento
-    let criacaoDay = toEnum criacao
 
+    let criacao = verifyMonth dia mes
+    let criacaoDay = toEnum (criacao + 59883)
+    let vencimentoDay = toEnum (criacao + vencimento + 59883)
+    
     let newCard = Cartao criacaoDay vencimentoDay 0 front back
     let editedPilha = adicionarCartao pilha newCard
     editPilhaAndSave (nome editedPilha) (cartoes editedPilha) 
@@ -150,7 +168,20 @@ module Main where
         putStrLn "\n# Número do Cartão é inválido #\n"
         editCardPilha pilha cards
   
+  --chooseCardMenu:: Pilha -> [Cartoes]-> IO()
+  --chooseCardMenu pilha cards = do
+  --  pilhaSearch <- search (nome pilha)
+  --  case (length (cartoes pilhaSearch)) == 0 of
+  --    True -> do
+  --      putStrLn putLine
+  --     putStrLn "              Esse pilha está vazia :(           \n"
+  --      mainMenu
+  --   False -> do  
+  --      studyCards pilha cards
 
+  --studyCard:: Pilha -> [Cartao] -> IO()
+  --studyCard pilha cartoes = do
+    
   errorMenu:: IO()
   errorMenu = do
     putStrLn "################# Opção inválida! #################\n"
