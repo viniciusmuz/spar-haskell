@@ -3,8 +3,8 @@ module Main where
   import Controllers.InterfaceController
   import Controllers.PilhaController
   import Controllers.SessaoController
-  import Models.Pilha
-  import Models.Cartao
+  import qualified Models.Pilha as Pilha
+  import qualified Models.Cartao as Cartao
   import Models.Sessao
   import Data.Char
   import Data.Time
@@ -62,9 +62,9 @@ module Main where
           menuOptions sessao (map toUpper option)
   
 
-  operationsPilha:: Sessao -> Pilha -> String -> IO()
+  operationsPilha:: Sessao -> Pilha.Pilha -> String -> IO()
   operationsPilha sessao pilha input |input == "A" = addCardPilha sessao pilha
-                                      |input == "E" = editCardPilha sessao pilha (cartoes pilha)
+                                      |input == "E" = editCardPilha sessao pilha (Pilha.cartoes pilha)
                                       |input == "R" = removePilha sessao pilha
                                       |input == "X" = mainMenu sessao
                                       |otherwise = errorMenu sessao
@@ -80,9 +80,9 @@ module Main where
       True -> do
         putStrLn putLine
         let pilha = db!!(numPilha-1)
-        putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
+        putStrLn $ "<<  " ++ (Pilha.nome pilha) ++ "  >>\n"
         print(pilha)
-        chooseCardMenu sessao pilha (cartoes pilha)
+        chooseCardMenu sessao pilha (Pilha.cartoes pilha)
       False -> do
         putStrLn "\n# Número da pilha inválido inválido #\n"
         choosePilhaMenu sessao
@@ -98,7 +98,7 @@ module Main where
       True -> do
         putStrLn putLine
         let pilha = db!!(numPilha-1)
-        putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
+        putStrLn $ "<<  " ++ (Pilha.nome pilha) ++ "  >>\n"
         print(pilha)
         putStrLn "[A] Add carta [E] Editar Carta  [R] Remover Pilha             [X] Voltar\n"
         option <- getLine
@@ -117,7 +117,7 @@ module Main where
     mainMenu sessao
 
   
-  removePilha:: Sessao -> Pilha -> IO ()
+  removePilha:: Sessao -> Pilha.Pilha -> IO ()
   removePilha sessao pilha = do
     putStrLn "\n> Tem certeza que deseja remover a pilha? [Y]"
     option <- getLine 
@@ -143,7 +143,7 @@ module Main where
                           |mes == 11 = criacao
                           |mes == 12 = criacao + 30
 
-  addCardPilha:: Sessao -> Pilha -> IO ()
+  addCardPilha:: Sessao -> Pilha.Pilha -> IO ()
   addCardPilha sessao pilha = do
     putStrLn putLine
     putStrLn "> Qual será a frente da carta?"
@@ -165,16 +165,16 @@ module Main where
     let criacaoDay = toEnum (criacao + 59883)
     let vencimentoDay = toEnum (criacao + vencimento + 59883)
     
-    let newCard = Cartao criacaoDay vencimentoDay 0 front back
-    let editedPilha = adicionarCartao pilha newCard
-    editPilhaAndSave (nome editedPilha) (cartoes editedPilha) 
+    let newCard = Cartao.Cartao criacaoDay vencimentoDay 0 front back
+    let editedPilha = Pilha.adicionarCartao pilha newCard
+    editPilhaAndSave (Pilha.nome editedPilha) (Pilha.cartoes editedPilha) 
     putStrLn "\nCarta adicionada com sucesso!\n"
     mainMenu sessao
 
-  editCardPilha:: Sessao -> Pilha -> [Cartao] -> IO()
+  editCardPilha:: Sessao -> Pilha.Pilha -> [Cartao.Cartao] -> IO()
   editCardPilha sessao pilha cards = do
     putStrLn putLine
-    print(show (nome pilha))
+    print(show (Pilha.nome pilha))
     putStrLn ""
     print(cards)
     putStrLn "Escolha o cartão que deseja editar: "
@@ -189,19 +189,19 @@ module Main where
         putStrLn "\n> Qual será o verso da carta?"
         novoVerso <- getLine
         
-        let editedPilha = editarCartao pilha cartao novaFrente novoVerso
-        print(show(nome editedPilha))
-        editPilhaAndSave (nome editedPilha) (cartoes editedPilha)
+        let editedPilha = Pilha.editarCartao pilha cartao novaFrente novoVerso
+        print(show(Pilha.nome editedPilha))
+        editPilhaAndSave (Pilha.nome editedPilha) (Pilha.cartoes editedPilha)
         putStrLn "\nCarta editada com sucesso!\n" 
         mainMenu sessao
       False -> do 
         putStrLn "\n# Número do Cartão é inválido #\n"
         editCardPilha sessao pilha cards
   
-  chooseCardMenu:: Sessao -> Pilha -> [Cartao]-> IO()
+  chooseCardMenu:: Sessao -> Pilha.Pilha -> [Cartao.Cartao]-> IO()
   chooseCardMenu sessao pilha cards = do
-    pilhaSearch <- search (nome pilha)
-    case (length (cartoes pilhaSearch)) == 0 of
+    pilhaSearch <- search (Pilha.nome pilha)
+    case (length (Pilha.cartoes pilhaSearch)) == 0 of
       True -> do
         putStrLn putLine
         putStrLn "              Essa não possui cartões:(           \n"
@@ -209,46 +209,48 @@ module Main where
       False -> do  
         studyCards sessao pilha cards
 
-  getFase:: [Cartao] -> Int -> [Cartao]
+  getFase:: [Cartao.Cartao] -> Int -> [Cartao.Cartao]
   getFase [] fase = []
   getFase (a:xs) fase = do
     if (fase ) == 0 then [a] ++ getFase xs fase
     else getFase xs fase
 
-  studyCards:: Sessao -> Pilha -> [Cartao] -> IO()
+  studyCards:: Sessao -> Pilha.Pilha -> [Cartao.Cartao] -> IO()
   studyCards sessao pilha cartoes = do
     shufflePilhaAndSave pilha
     
     let headCartao = head cartoes
     putStrLn "Aperte enter para ver a frente do cartão: "
     getLine
-    print (frente headCartao)
+    print (Cartao.frente headCartao)
     putStrLn putLine
     putStrLn "Aperte enter para ver o verso do cartão: "
     getLine
-    print (verso headCartao)
+    print (Cartao.verso headCartao)
     putStrLn putLine
     putStrLn "[A]certei!\n[E]rrei :(\n "
     input <- getLine
     if (map toUpper input) == "A" then do
       let newPilha = addFase headCartao pilha 
       editSessaoAndSave (dataEstudo sessao) ((cartoesEstudados sessao) ++ [headCartao])
-      studyCards (searchSessao (dataEstudo sessao)) newPilha (cartoes newPilha)
+      sessao <- (searchSessao (dataEstudo sessao))
+      studyCards (sessao) (newPilha) (Pilha.cartoes newPilha)
     else do
       putStrLn "Você errou"
-      studyPilhaMenu (searchSessao (dataEstudo sessao))
+      sessao <- (searchSessao (dataEstudo sessao))
+      studyPilhaMenu (sessao)
 
-  addFase :: Cartao -> Pilha -> Pilha
+  addFase :: Cartao.Cartao -> Pilha.Pilha -> Pilha.Pilha
   addFase cartao pilha = do
-    if (fase cartao) == 4 then do
-      let newPilha = removerCartao pilha cartao
-      return editPilhaAndSave (nome newPilha) (cartoes newPilha)
+    if (Cartao.fase cartao) == 4 then do
+      let newPilha = Pilha.removerCartao pilha cartao
+      let salva = editPilhaAndSave (Pilha.nome newPilha) (Pilha.cartoes newPilha)
+      newPilha
     else do
-      let newCard = Cartao (dataCriacao cartao) (dataVencimento cartao) ((fase cartao) + 1) (frente cartao) (verso cartao)
-      let newPilha = editarCartao pilha cartao (frente cartao) (verso cartao)
-      return editPilhaAndSave (nome newPilha) (cartoes newPilha)
-    
-
+      let newCard = Cartao.Cartao (Cartao.dataCriacao cartao) (Cartao.dataVencimento cartao) ((Cartao.fase cartao) + 1) (Cartao.frente cartao) (Cartao.verso cartao)
+      let newPilha = Pilha.editarCartao pilha cartao (Cartao.frente cartao) (Cartao.verso cartao)
+      let pilhas = editPilhaAndSave (Pilha.nome newPilha) (Pilha.cartoes newPilha)
+      newPilha
 
     
   errorMenu:: Sessao -> IO()
