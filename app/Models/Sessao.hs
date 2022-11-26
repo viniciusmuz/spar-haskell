@@ -3,6 +3,6 @@ module Models.Sessao where
 
     data Sessao = Sessao {
         dataEstudo:: Day,
-        duracao:: TimeOfDay,
+        duracao:: NominalDiffTime,
         cartoesEstudados:: Integer
     } deriving (Show, Read, Eq)
