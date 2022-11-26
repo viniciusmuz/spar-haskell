@@ -58,6 +58,7 @@ module Main where
                               |otherwise = errorMenu
 
   studyPilhaMenu:: IO()
+  studyPilhaMenu = do
     putStrLn "> Escolha o número da pilha que deseja estudar: "
     numPilha <- readLn
     db <- loadDB
@@ -139,20 +140,9 @@ module Main where
     putStrLn "\n> Qual será o verso da carta?"
     back <- getLine
 
-    putStrLn "\n> Qual o data de hoje? "
-    dia <- readLn :: IO Int
-
-    putStrLn "\n> Qual o mês atual? (Janeiro = 1, Fevereiro = 2,...) "
-    mes <- readLn :: IO Int
-
-    putStrLn "\n> Quanto dias essa carta deve durar? "
-    vencimento <- readLn :: IO Int
-
-    let criacao = verifyMonth dia mes
-    let criacaoDay = toEnum (criacao + 59883)
-    let vencimentoDay = toEnum (criacao + vencimento + 59883)
+    hoje <- utctDay <$> getCurrentTime
     
-    let newCard = Cartao criacaoDay vencimentoDay 0 front back
+    let newCard = Cartao hoje hoje 0 front back
     let editedPilha = adicionarCartao pilha newCard
     editPilhaAndSave (nome editedPilha) (cartoes editedPilha) 
     putStrLn "\nCarta adicionada com sucesso!\n"
@@ -185,7 +175,7 @@ module Main where
         putStrLn "\n# Número do Cartão é inválido #\n"
         editCardPilha pilha cards
   
-  chooseCardMenu:: Pilha -> [Cartoes]-> IO()
+  chooseCardMenu:: Pilha -> [Cartao]-> IO()
   chooseCardMenu pilha cards = do
     pilhaSearch <- search (nome pilha)
     case (length (cartoes pilhaSearch)) == 0 of
@@ -194,11 +184,8 @@ module Main where
         putStrLn "              Essa não possui cartões:(           \n"
         mainMenu
       False -> do  
-        studyCards pilha cards
+        putStrLn "Chegou"
 
-  studyCard:: Pilha -> [Cartao] -> IO()
-  studyCard pilha cartoes = do
-    
     
   errorMenu:: IO()
   errorMenu = do

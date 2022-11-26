@@ -2,6 +2,7 @@ module Models.Pilha where
 import qualified Models.Cartao as Cartao
 import Data.List
 import Data.Time
+import System.Random (newStdGen, randomRIO)
 
 data Pilha = Pilha {
   nome:: String,
@@ -37,3 +38,5 @@ cartoesVencidos pilha dia vencidos
             then cartoesVencidos pilhaSemCartao dia (vencidos ++ [cartao])
             else cartoesVencidos pilhaSemCartao dia vencidos
 
+shuffle:: [Cartao.Cartao] -> [Cartao.Cartao]
+shuffle cartoes = cartoes

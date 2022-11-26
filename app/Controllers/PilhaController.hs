@@ -8,7 +8,8 @@ module Controllers.PilhaController where
   import Data.Maybe (fromMaybe)
   import Models.Pilha
   import Models.Cartao
-
+  import qualified Models.Pilha as Pilha
+  
 
   getPilhaNames :: IO [String]
   getPilhaNames = do
@@ -102,7 +103,7 @@ module Controllers.PilhaController where
   instance CanEditPilhaName String String where
     editaPilha pilhaName newPilhaName = do
       db <- loadDB
-      let dbAsNames = (map nome db)
+      let dbAsNames = map nome db
       let idx = fromMaybe (-1) (elemIndex pilhaName dbAsNames)
       if idx == -1 then (do
         print "Index doesn't exists"
@@ -118,7 +119,7 @@ module Controllers.PilhaController where
     editaPilha pilhaName newCards = do
       db <- loadDB
       let dbAsNames = map nome db
-      if ((procuraPilha dbAsNames pilhaName) == -1) then do
+      if procuraPilha dbAsNames pilhaName == -1 then do
         putStrLn "Couldn't find the Pilha"
         return db
       else do
@@ -134,18 +135,14 @@ module Controllers.PilhaController where
         putStrLn "cheguei aq8"
         return newDb
 
-  class CanShufflePilhaAndSave a where
-    shufflePilhaAndSave :: a -> IO [Pilha]
+  {- class CanShufflePilhaAndSave a where
+  shufflePilhaAndSave :: a  -> Pilha
   instance CanShufflePilhaAndSave Pilha where
     shufflePilhaAndSave pilha = do
-      newDb <- shufflePilha pilha
+      let newDb = Pilha (nome pilha) (Pilha.shuffle (cartoes pilha))
+      rea
       writeDB newDb
-      return newDb
-  instance CanShufflePilhaAndSave String where
-    shufflePilhaAndSave pilhaName = do
-      newDb <- shufflePilha pilhaName
-      writeDB newDb
-      return newDb
+      return newDb -}
 
   (>-=) :: String -> Pilha -> Bool
   (>-=) cName pilha = cName == nome pilha
