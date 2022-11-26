@@ -136,11 +136,10 @@ module Controllers.PilhaController where
         return newDb
 
   {- class CanShufflePilhaAndSave a where
-  shufflePilhaAndSave :: a  -> Pilha
+    shufflePilhaAndSave :: a  -> Pilha
   instance CanShufflePilhaAndSave Pilha where
     shufflePilhaAndSave pilha = do
       let newDb = Pilha (nome pilha) (Pilha.shuffle (cartoes pilha))
-      rea
       writeDB newDb
       return newDb -}
 

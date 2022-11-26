@@ -2,7 +2,10 @@ module Models.Pilha where
 import qualified Models.Cartao as Cartao
 import Data.List
 import Data.Time
-import System.Random (newStdGen, randomRIO)
+import System.Random (newStdGen, randomRIO, getStdRandom, Random (randomR))
+import Data.Function
+import Data.Functor
+import Control.Monad (replicateM)
 
 data Pilha = Pilha {
   nome:: String,
@@ -38,5 +41,9 @@ cartoesVencidos pilha dia vencidos
             then cartoesVencidos pilhaSemCartao dia (vencidos ++ [cartao])
             else cartoesVencidos pilhaSemCartao dia vencidos
 
-shuffle:: [Cartao.Cartao] -> [Cartao.Cartao]
-shuffle cartoes = cartoes
+shuffle:: [a] -> IO [a]
+shuffle [] = return []
+shuffle cartoes = do 
+    randomPosition <- getStdRandom (randomR (0, length cartoes - 1))
+    let (left, a:right) = splitAt randomPosition cartoes
+    Data.Functor.fmap (a:) (shuffle (left ++ right))
