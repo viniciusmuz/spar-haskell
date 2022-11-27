@@ -10,6 +10,7 @@ module Main where
   import Data.Time.Clock
   import Data.Time.Calendar
   import Data.Time.Calendar.OrdinalDate
+  import qualified Models.Pilha as Pilha
   
   welcome :: String
   welcome = "*** Bem-vindo ao Spar! ***" ++ "\n" ++ 
