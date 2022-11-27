@@ -32,7 +32,7 @@ module Main where
     menuOptions (map toUpper input)
 
   menuOptions:: String -> IO ()
-  menuOptions option |option == "E" = choosePilhaMenu 
+  menuOptions option |option == "E" = studyPilhaMenu 
                      |option == "C" = createPilha 
                      |option == "D" = choosePilhaMenu 
                      |option == "R" = choosePilhaMenu

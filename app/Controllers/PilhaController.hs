@@ -134,15 +134,7 @@ module Controllers.PilhaController where
         let newDb = s ++ newElm : end
         putStrLn "cheguei aq8"
         return newDb
-
-  {- class CanShufflePilhaAndSave a where
-    shufflePilhaAndSave :: a  -> Pilha
-  instance CanShufflePilhaAndSave Pilha where
-    shufflePilhaAndSave pilha = do
-      let newDb = Pilha (nome pilha) (Pilha.shuffle (cartoes pilha))
-      writeDB newDb
-      return newDb -}
-
+   
   (>-=) :: String -> Pilha -> Bool
   (>-=) cName pilha = cName == nome pilha
 

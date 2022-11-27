@@ -41,8 +41,14 @@ cartoesVencidos pilha dia vencidos
             then cartoesVencidos pilhaSemCartao dia (vencidos ++ [cartao])
             else cartoesVencidos pilhaSemCartao dia vencidos
 
-shuffle:: [a] -> IO [a]
-shuffle [] = return []
+ordemAleatoria:: Pilha -> IO [Cartao.Cartao]
+ordemAleatoria pilhaOriginal = do
+    let cartoesOriginal = (cartoes pilhaOriginal)
+    cartoesRandomizados <- shuffle cartoesOriginal
+    return cartoesRandomizados
+
+
+shuffle:: [Cartao.Cartao] -> IO [Cartao.Cartao]
 shuffle cartoes = do 
     randomPosition <- getStdRandom (randomR (0, length cartoes - 1))
     let (left, a:right) = splitAt randomPosition cartoes
