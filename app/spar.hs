@@ -10,7 +10,7 @@ module Main where
   import Data.Time.Clock
   import Data.Time.Calendar
   import Data.Time.Calendar.OrdinalDate
-
+  
   welcome :: String
   welcome = "*** Bem-vindo ao Spar! ***" ++ "\n" ++ 
           "Digite a letra correspondente à ação que você deseja executar\n" ++
@@ -69,11 +69,25 @@ module Main where
         putStrLn putLine
         let pilha = db!!(numPilha-1)
         putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
-        print(pilha)
-        chooseCardMenu pilha (cartoes pilha)
+        inicioSessao <- getCurrentTime
+        studyCartoes (cartoes pilha) 0 inicioSessao
       False -> do
         putStrLn "\n# Número da pilha inválido inválido #\n"
         choosePilhaMenu
+
+  studyCartoes :: [Cartao] -> Integer -> UTCTime -> IO()
+  studyCartoes cartoes quantidade inicio
+          | length cartoes == 0 = putStrLn (show quantidade)
+          | otherwise = do
+            let cartao = (head cartoes)
+            putStrLn (frente cartao)
+            putStrLn "***\nPressione Enter para ver o verso do cartão\n***"
+            discard <- getLine
+            putStrLn (verso cartao)
+            putStrLn "***\nPressione Enter para ver o próximo cartão\n***"
+            discard2 <- getLine
+            studyCartoes (tail cartoes) (quantidade + 1) inicio
+
 
   choosePilhaMenu:: IO ()
   choosePilhaMenu = do

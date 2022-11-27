@@ -3,7 +3,7 @@
 
 
 module Controllers.SessaoControler where
-  import Controllers.TxtController
+  import Controllers.TxtController ( loadSessoesDB, writeSessoesDB )
   import Data.List (elemIndex, permutations)
   import Data.Maybe (fromMaybe)
   import Models.Pilha
