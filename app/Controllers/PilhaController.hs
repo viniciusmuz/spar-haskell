@@ -8,8 +8,8 @@ module Controllers.PilhaController where
   import Data.Maybe (fromMaybe)
   import Models.Pilha
   import Models.Cartao
-  import System.Random (getStdGen, randomRIO)
-
+  import qualified Models.Pilha as Pilha
+  
 
   getPilhaNames :: IO [String]
   getPilhaNames = do
@@ -103,7 +103,7 @@ module Controllers.PilhaController where
   instance CanEditPilhaName String String where
     editaPilha pilhaName newPilhaName = do
       db <- loadDB
-      let dbAsNames = (map nome db)
+      let dbAsNames = map nome db
       let idx = fromMaybe (-1) (elemIndex pilhaName dbAsNames)
       if idx == -1 then (do
         print "Index doesn't exists"
@@ -119,59 +119,22 @@ module Controllers.PilhaController where
     editaPilha pilhaName newCards = do
       db <- loadDB
       let dbAsNames = map nome db
-      if ((procuraPilha dbAsNames pilhaName) == -1) then do
+      if procuraPilha dbAsNames pilhaName == -1 then do
         putStrLn "Couldn't find the Pilha"
         return db
       else do
         let idx = procuraPilha dbAsNames pilhaName
+        putStrLn "cheguei aq444"
         let oldElm = db!!idx
+        putStrLn "cheguei aq5"
         let newElm = Pilha { nome=nome oldElm, cartoes=newCards }
+        putStrLn "cheguei aq6"
         let (s, _:end) = splitAt idx db
+        putStrLn "cheguei aq7"
         let newDb = s ++ newElm : end
+        putStrLn "cheguei aq8"
         return newDb
-
-  rndElem :: [a] -> IO a
-  rndElem xs = do
-    index <- randomRIO (0, length xs - 2)
-    return $ xs !! index
-
-  rndPermutation :: [a] -> IO [a]
-  rndPermutation = rndElem . permutations
-
-  class CanShufflePilha a where
-    shufflePilha :: a -> IO [Pilha]
-  instance CanShufflePilha Pilha where
-    shufflePilha pilha = do
-      db <- loadDB
-      foundPilha <- search (nome pilha)
-      if length (cartoes foundPilha) < 2 then (do loadDB)
-        else (do
-        shuffledPilha <- rndPermutation (cartoes foundPilha)
-        editaPilha (nome pilha) shuffledPilha
-        )
-  instance CanShufflePilha String where
-    shufflePilha pilhaNome = do
-      db <- loadDB
-      foundPilha <- search pilhaNome
-      if length (cartoes foundPilha) < 2 then (do loadDB)
-        else (do
-        shuffledPilha <- rndPermutation (cartoes foundPilha)
-        editaPilha pilhaNome shuffledPilha
-        )
-
-  class CanShufflePilhaAndSave a where
-    shufflePilhaAndSave :: a -> IO [Pilha]
-  instance CanShufflePilhaAndSave Pilha where
-    shufflePilhaAndSave pilha = do
-      newDb <- shufflePilha pilha
-      writeDB newDb
-      return newDb
-  instance CanShufflePilhaAndSave String where
-    shufflePilhaAndSave pilhaName = do
-      newDb <- shufflePilha pilhaName
-      writeDB newDb
-      return newDb
-
+   
   (>-=) :: String -> Pilha -> Bool
   (>-=) cName pilha = cName == nome pilha
 
@@ -179,4 +142,3 @@ module Controllers.PilhaController where
   (>==) :: Pilha -> Pilha -> Bool
   -- TODO: Há alguma especificidade para implementar aqui?
   (>==) deck1 deck2 = deck1 == deck2
-      
