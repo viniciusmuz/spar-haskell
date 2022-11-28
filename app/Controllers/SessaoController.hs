@@ -1,53 +1,29 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
+
 module Controllers.SessaoController where
-    import Controllers.TxtController
-    import Data.List (elemIndex, permutations)
-    import Data.Maybe (fromMaybe)
-    import Models.Sessao
-    import Models.Cartao
-    import Data.Time
---import System.Random (getStdGen, randomRIO)
+  import Controllers.TxtController ( loadSessoesDB, writeSessoesDB )
+  import Data.List (elemIndex, permutations)
+  import Data.Maybe (fromMaybe)
+  import Models.Pilha
+  import Models.Cartao
+  import qualified Models.Pilha as Pilha
+  import Data.Time
+  import Models.Sessao
+  import Data.Time (diffUTCTime)
+  
+  add :: Sessao -> IO [Sessao]
+  add sessao = do
+    db <- loadSessoesDB
+    let addedList = db ++ [sessao]
+    return addedList
 
-    class CanSearch v where
-    -- |Searches a Deck in the database, by name.
-        searchSessao :: v -> IO Sessao
-    instance CanSearch Day where
-        searchSessao dayToSearch = do
-            db <- loadDBSessoes
-            let m = filter (dayToSearch >-=) db
-            return (if null m then Sessao { dataEstudo=dayToSearch, cartoesEstudados=[] } else head m)
-
-    procuraSessao :: [Day] -> Day -> Int
-    procuraSessao [] n = -1
-    procuraSessao (a:xs) n = do
-        if a == n then 0
-        else 1 + procuraSessao xs n
-
-
-    class CanEditSessaoAndSave v1 v2 where
-        editSessaoAndSave :: v1 -> v2 -> IO [Sessao]
-    instance CanEditSessaoAndSave Day [Cartao] where
-        editSessaoAndSave sessaoDay newCards = do
-            sessao <- editaSessao sessaoDay newCards
-            writeDBSessao sessao
-            return sessao
-
+  finalizarSessao :: UTCTime -> Integer -> IO()
+  finalizarSessao inicio cartoesEstudados = do
+    now <- getCurrentTime
+    let duracao = diffUTCTime now inicio
+    let novaSessao = Sessao (utctDay inicio) duracao cartoesEstudados
+    addedList <- add novaSessao
+    writeSessoesDB (addedList)
     
-    class CanEditSessao v1 v2 where
-        editaSessao :: v1 -> v2 -> IO [Sessao]
-    instance CanEditSessao Day [Cartao] where
-        editaSessao sessaoDay newCards = do
-            dbSessao <- loadDBSessao sessaoDay
-            let dbAsDay = map dataEstudo dbSessao
-            if ((procuraSessao dbAsDay sessaoDay) == -1) then do
-                putStrLn "Sessão não encontrada"
-                return dbSessao
-            else do
-                let idx = procuraSessao dbAsDay sessaoDay
-                let oldElm = dbSessao!!idx
-                let newElm = Sessao { dataEstudo= dataEstudo oldElm, cartoesEstudados=newCards }
-                let (s, _:end) = splitAt idx dbSessao
-                let newDb = s ++ newElm : end
-                return newDb
-
-    (>-=) :: Day -> Sessao -> Bool
-    (>-=) sDay sessao = sDay == dataEstudo sessao
