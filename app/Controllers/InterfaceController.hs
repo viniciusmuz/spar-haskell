@@ -12,8 +12,7 @@ module Controllers.InterfaceController where
     initialMenu = "Digite a letra correspondente à ação que você deseja executar\n" ++
                 "[E]studar\n" ++
                 "[C]riar Pilha\n"++
-                "[R]emover Pilha\n"++
-                "[A]lterar Pilha\n" ++
+                "[G]erenciar Pilha\n"++
                 "[V]isualizar sessões de estudo anteriores\n"++
                 putLine
 

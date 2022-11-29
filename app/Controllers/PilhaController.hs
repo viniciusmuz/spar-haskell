@@ -44,7 +44,6 @@ module Controllers.PilhaController where
       return addedList
 
   class CanRemove v where
-    -- |Removes a Deck from database, but doesn\'t removes it from database, instead it does just returns it, while this deck can be searched by name (receiving a 'String') or by a proper 'Models.Deck'.
     remove :: v -> IO [Pilha]
   instance CanRemove String where
     remove nameToSearch = do
@@ -59,9 +58,6 @@ module Controllers.PilhaController where
       return pilhas
 
   class CanRemoveAndSave v where
-    -- |Removes a Deck from database permanently, while this deck can be searched by name (receiving a 'String') or by a proper 'Models.Deck'.
-    --
-    -- This action will carry changes to 'database/Decks.txt'.
     removeAndSave :: v -> IO [Pilha]
   instance CanRemoveAndSave String where
     removeAndSave nameToSearch = do

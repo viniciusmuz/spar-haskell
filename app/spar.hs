@@ -139,7 +139,7 @@ module Main where
         putStrLn putLine
         let pilha = db!!(numPilha-1)
         putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
-        print(pilha)
+        putStrLn (show pilha)
         putStrLn "[A] Add carta [E] Editar Carta  [R] Remover Pilha             [X] Voltar\n"
         option <- getLine
         putStrLn ""
@@ -240,9 +240,6 @@ module Main where
   printSessoes [] = ""
   printSessoes (h:t) = "Data de estudo: " ++ show (dataEstudo h) ++ "\nDuracao: " ++ show (duracao h) ++ "\nCartoes Estudados: " ++ show (cartoesEstudados h) ++ "\n\n" ++ printSessoes t
     
-
-
-
   errorMenu:: IO()
   errorMenu = do
     putStrLn "################# Opção inválida! #################\n"
