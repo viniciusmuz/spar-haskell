@@ -124,15 +124,10 @@ module Controllers.PilhaController where
         return db
       else do
         let idx = procuraPilha dbAsNames pilhaName
-        putStrLn "cheguei aq444"
         let oldElm = db!!idx
-        putStrLn "cheguei aq5"
         let newElm = Pilha { nome=nome oldElm, cartoes=newCards }
-        putStrLn "cheguei aq6"
         let (s, _:end) = splitAt idx db
-        putStrLn "cheguei aq7"
         let newDb = s ++ newElm : end
-        putStrLn "cheguei aq8"
         return newDb
    
   (>-=) :: String -> Pilha -> Bool
