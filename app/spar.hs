@@ -75,7 +75,7 @@ module Main where
         cartoesAleatorios <- Pilha.shuffle (filtraCartoesDia (dia) (cartoes pilha))
         studyCartoes pilha cartoesAleatorios 0 inicioSessao
       False -> do
-        putStrLn "\n# Número da pilha inválido inválido #\n"
+        putStrLn "\n# Número da pilha inválido #\n"
         choosePilhaMenu
 
   filtraCartoesDia:: UTCTime -> [Cartao] -> [Cartao]
@@ -186,9 +186,6 @@ module Main where
 
   editCardPilha:: Pilha -> [Cartao] -> IO()
   editCardPilha pilha cards = do
-    putStrLn putLine
-    print(show (nome pilha))
-    putStrLn ""
     putStrLn "Escolha o cartão que deseja editar: "
     numCartao <- readLn
     case (numCartao > 0 && numCartao <= length cards) of
@@ -226,7 +223,8 @@ module Main where
     sessoes <- loadSessoesDB
     case length sessoes == 0 of
       True -> do
-        putStrLn "Você ainda não realizou nenhuma sessão de estudo :( "
+        putStrLn "Você ainda não realizou nenhuma sessão de estudo :( \n\n "
+        mainMenu
       False -> do
         putStrLn "Sessões: \n"
         putStrLn (printSessoes sessoes)
