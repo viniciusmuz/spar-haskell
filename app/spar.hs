@@ -72,8 +72,8 @@ module Main where
         putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
         inicioSessao <- getCurrentTime
         dia <- getCurrentTime
-        let cartoesFiltrados = filtraCartoesDia (dia) (cartoes pilha)
-        studyCartoes pilha cartoesFiltrados 0 inicioSessao
+        cartoesAleatorios <- Pilha.shuffle (filtraCartoesDia (dia) (cartoes pilha))
+        studyCartoes pilha cartoesAleatorios 0 inicioSessao
       False -> do
         putStrLn "\n# Número da pilha inválido inválido #\n"
         choosePilhaMenu
@@ -94,8 +94,6 @@ module Main where
             putStrLn "***\nPressione Enter para ver o verso do cartão\n***"
             discard <- getLine
             putStrLn (verso cartao)
-            putStrLn "***\nPressione Enter para ver o próximo cartão\n***"
-            discard2 <- getLine
             putStrLn "***\n[A]certou\n[E]rrou\n[X]Para o estudo ***"
             feedback <- getLine
             dataHoje <- getCurrentTime

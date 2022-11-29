@@ -48,8 +48,8 @@ ordemAleatoria pilhaOriginal = do
     return cartoesRandomizados
 
 
-shuffle:: [Cartao.Cartao] -> IO [Cartao.Cartao]
-shuffle cartoes = do 
-    randomPosition <- getStdRandom (randomR (0, length cartoes - 1))
-    let (left, a:right) = splitAt randomPosition cartoes
-    Data.Functor.fmap (a:) (shuffle (left ++ right))
+shuffle:: [a] -> IO [a]
+shuffle [] = return []
+shuffle xs = do randomPosition <- getStdRandom (randomR (0, length xs - 1))
+                let (left, (a:right)) = splitAt randomPosition xs
+                fmap (a:) (shuffle (left ++ right))
