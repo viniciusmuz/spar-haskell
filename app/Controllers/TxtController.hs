@@ -4,6 +4,7 @@ module Controllers.TxtController where
   import Models.Pilha
   import Data.List (delete)
   import Models.Sessao
+  import Models.Intervalo (Intervalo)
   
   
   
@@ -38,3 +39,12 @@ module Controllers.TxtController where
   writeSessoesDB sessao = do
     writeFile "../database/Sessoes.txt" (show sessao)
 
+  writeIntervalosDB :: Intervalo -> IO ()
+  writeIntervalosDB intervalos = do
+    writeFile "../database/Intervalos.txt" (show intervalos)
+
+  loadIntervalosDB :: IO Intervalo
+  loadIntervalosDB = do
+    file <- readFile "../database/Intervalos.txt"
+    let intervalos = (read file :: Intervalo)
+    return intervalos

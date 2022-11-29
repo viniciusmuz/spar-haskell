@@ -1,11 +1,13 @@
 module Main where
   import Controllers.TxtController
   import Controllers.InterfaceController
+  import Controllers.IntervaloController
   import Controllers.PilhaController
   import Controllers.SessaoController
   import Models.Pilha
   import Models.Cartao
   import Models.Sessao
+  import qualified Models.Intervalo as Intervalo
   import Data.Char
   import Data.Time
   import Data.Time.Clock
@@ -20,6 +22,7 @@ module Main where
           "[C]riar Pilha\n"++
           "[G]erenciar Pilha\n"++
           "[V]isualizar sessões de estudo anteriores\n"++
+          "[A]lterar intervalos\n"++
           putLine
 
   main :: IO()  
@@ -37,6 +40,7 @@ module Main where
                      |option == "C" = createPilha 
                      |option == "G" = choosePilhaMenu 
                      |option == "V" = stats
+                     |option == "A" = alterarIntervalosMenu
                      |otherwise = errorMenu  
 
   mainMenu:: IO()
@@ -90,6 +94,7 @@ module Main where
           | length cards == 0 = mainMenu
           | otherwise = do
             let cartao = (head cards)
+            intervalos <- getIntervalos
             putStrLn (frente cartao)
             putStrLn "***\nPressione Enter para ver o verso do cartão\n***"
             discard <- getLine
@@ -98,9 +103,10 @@ module Main where
             feedback <- getLine
             dataHoje <- getCurrentTime
             if (map toUpper feedback) == "A" then do
-              let newVencimento = addDays ((fase cartao) + 1) (utctDay dataHoje)
+              let numeroDias = getIntervalo intervalos ((fase cartao) + 1)
+              let newVencimento = addDays (numeroDias) (utctDay dataHoje)
               let newCard = Cartao (dataCriacao cartao) (newVencimento) (fase cartao + 1) (frente cartao) (verso cartao)
-              if(fase newCard == 5) then do
+              if(fase newCard > 5) then do
                 let newPilha2 = removerCartao pilha cartao
                 editPilhaAndSave (nome newPilha2) (cartoes newPilha2)
               else do
@@ -110,8 +116,9 @@ module Main where
               putStrLn putLine
               studyCartoes pilha (tail cards) (quantidade + 1) inicio 
             else if (map toUpper feedback) == "E" then do
-              if(fase cartao /= 0) then do
-                let newVencimento = addDays ((fase cartao) - 1) (utctDay dataHoje)
+              if(fase cartao /= 1) then do
+                let numeroDias = getIntervalo intervalos ((fase cartao) - 1)
+                let newVencimento = addDays numeroDias (utctDay dataHoje)
                 let newCard = Cartao (dataCriacao cartao) (newVencimento) (fase cartao - 1) (frente cartao) (verso cartao)
                 let newPilha2 = removerCartao pilha cartao
                 let newPilha = adicionarCartao newPilha2 newCard
@@ -178,7 +185,7 @@ module Main where
 
     hoje <- utctDay <$> getCurrentTime
     
-    let newCard = Cartao hoje hoje 0 front back
+    let newCard = Cartao hoje hoje 1 front back
     let editedPilha = adicionarCartao pilha newCard
     editPilhaAndSave (nome editedPilha) (cartoes editedPilha) 
     putStrLn "\nCarta adicionada com sucesso!\n"
@@ -234,6 +241,35 @@ module Main where
   printSessoes:: [Sessao] -> String
   printSessoes [] = ""
   printSessoes (h:t) = "Data de estudo: " ++ show (dataEstudo h) ++ "\nDuracao: " ++ show (duracao h) ++ "\nCartoes Estudados: " ++ show (cartoesEstudados h) ++ "\n\n" ++ printSessoes t
+
+  alterarIntervalosMenu:: IO ()
+  alterarIntervalosMenu = do
+    putStrLn putLine
+
+    putStrLn "\n> Quantos dias depois você quer ver uma carta acertada nenhuma vez? "
+    fase1 <- getLine
+    let f1 = (read fase1 :: Integer)
+
+    putStrLn "\n> Quantos dias depois você quer ver uma carta acertada uma vez? "
+    fase2 <- getLine
+    let f2 = (read fase2 :: Integer)
+
+    putStrLn "\n> Quantos dias depois você quer ver uma carta acertada duas vezes? "
+    fase3 <- getLine
+    let f3 = (read fase3 :: Integer)
+
+    putStrLn "\n> Quantos dias depois você quer ver uma carta acertada três vezes? "
+    fase4 <- getLine
+    let f4 = (read fase4 :: Integer)
+
+    putStrLn "\n> Quantos dias depois você quer ver uma carta acertada quatro vezes? "
+    fase5 <- getLine
+    let f5 = (read fase5 :: Integer)
+
+    let novosIntervalos = Intervalo.Intervalo f1 f2 f3 f4 f5
+    setIntervalos novosIntervalos
+    putStrLn "\nIntervalos salvos com sucesso!\n"
+    mainMenu
     
   errorMenu:: IO()
   errorMenu = do
