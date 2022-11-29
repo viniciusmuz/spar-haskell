@@ -137,7 +137,7 @@ module Main where
         putStrLn putLine
         let pilha = db!!(numPilha-1)
         putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
-        putStrLn (show pilha)
+        printPilha (cartoes pilha) 1 ""
         putStrLn "[A] Add carta [E] Editar Carta  [R] Remover Pilha             [X] Voltar\n"
         option <- getLine
         putStrLn ""
@@ -189,7 +189,6 @@ module Main where
     putStrLn putLine
     print(show (nome pilha))
     putStrLn ""
-    print(cards)
     putStrLn "Escolha o cartão que deseja editar: "
     numCartao <- readLn
     case (numCartao > 0 && numCartao <= length cards) of
@@ -242,3 +241,9 @@ module Main where
   errorMenu = do
     putStrLn "################# Opção inválida! #################\n"
     mainMenu
+
+  printPilha:: [Cartao] -> Int -> String -> IO()
+  printPilha cartoes posicao str
+      | length cartoes == 0 = putStrLn str
+      | otherwise = do
+        printPilha (tail cartoes) (posicao + 1) (str ++ show (posicao) ++ " - " ++ frente (head cartoes) ++ "\n")
