@@ -10,10 +10,11 @@ module Controllers.InterfaceController where
 
     initialMenu:: String
     initialMenu = "Digite a letra correspondente à ação que você deseja executar\n" ++
-                "[C]Criar Pilha\n"++
-                "[R]Remover Pilha\n"++
-                "[D]Editar Pilha\n" ++
-                "[E]Estudar\n" ++
+                "[E]studar\n" ++
+                "[C]riar Pilha\n"++
+                "[R]emover Pilha\n"++
+                "[A]lterar Pilha\n" ++
+                "[V]isualizar sessões de estudo anteriores\n"++
                 putLine
 
     menuPilhas:: IO String

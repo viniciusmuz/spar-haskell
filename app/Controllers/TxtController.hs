@@ -4,7 +4,7 @@ module Controllers.TxtController where
   import Models.Pilha
   import Data.List (delete)
   import Models.Sessao
-  import Models.Configuracoes (Configuracoes)
+  
   
   -- |Loads Pilhas database into memory, and returns it as a list ([Pilha])
   loadDB :: IO [Pilha]
@@ -38,12 +38,3 @@ module Controllers.TxtController where
   writeSessoesDB sessao = do
     writeFile "../database/Sessoes.txt" (show sessao)
 
-  loadConfiguracoesDB :: IO Configuracoes
-  loadConfiguracoesDB = do
-    file <- readFile "../database/Configuracoes.txt"
-    let configuracoes = (read file :: Configuracoes)
-    return configuracoes
-
-  writeConfiguracoesDB :: Configuracoes -> IO ()
-  writeConfiguracoesDB configuracoes = do
-    writeFile "../database/Configuracoes.txt" (show configuracoes)

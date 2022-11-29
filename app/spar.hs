@@ -16,10 +16,10 @@ module Main where
   welcome :: String
   welcome = "*** Bem-vindo ao Spar! ***" ++ "\n" ++ 
           "Digite a letra correspondente à ação que você deseja executar\n" ++
-          "[C]Criar Pilha\n"++
-          "[R]Remover Pilha\n"++
-          "[D]Editar Pilha\n" ++
-          "[E]Estudar\n" ++
+          "[E]studar\n" ++
+          "[C]riar Pilha\n"++
+          "[G]erenciar Pilha\n"++
+          "[V]isualizar sessões de estudo anteriores\n"++
           putLine
 
   main :: IO()  
@@ -35,8 +35,8 @@ module Main where
   menuOptions:: String -> IO ()
   menuOptions option |option == "E" = studyPilhaMenu 
                      |option == "C" = createPilha 
-                     |option == "D" = choosePilhaMenu 
-                     |option == "R" = choosePilhaMenu
+                     |option == "G" = choosePilhaMenu 
+                     |option == "V" = stats
                      |otherwise = errorMenu  
 
   mainMenu:: IO()
@@ -71,28 +71,62 @@ module Main where
         let pilha = db!!(numPilha-1)
         putStrLn $ "<<  " ++ (nome pilha) ++ "  >>\n"
         inicioSessao <- getCurrentTime
-        studyCartoes (cartoes pilha) 0 inicioSessao
+        dia <- getCurrentTime
+        let cartoesFiltrados = filtraCartoesDia (dia) (cartoes pilha)
+        studyCartoes pilha cartoesFiltrados 0 inicioSessao
       False -> do
         putStrLn "\n# Número da pilha inválido inválido #\n"
         choosePilhaMenu
 
-  studyCartoes :: [Cartao] -> Integer -> UTCTime -> IO()
-  studyCartoes cartoes quantidade inicio
-          | length cartoes == 0 = putStrLn (show quantidade)
+  filtraCartoesDia:: UTCTime -> [Cartao] -> [Cartao]
+  filtraCartoesDia dia [] = []
+  filtraCartoesDia dia (h:t) = do
+    let diferenca = diffDays (utctDay dia) (dataVencimento h)
+    if(diferenca >= 0) then filtraCartoesDia dia t ++ [h]
+    else filtraCartoesDia dia t  
+
+  studyCartoes :: Pilha -> [Cartao] -> Integer -> UTCTime -> IO()
+  studyCartoes pilha cards quantidade inicio
+          | length cards == 0 = mainMenu
           | otherwise = do
-            let cartao = (head cartoes)
+            let cartao = (head cards)
             putStrLn (frente cartao)
             putStrLn "***\nPressione Enter para ver o verso do cartão\n***"
             discard <- getLine
             putStrLn (verso cartao)
             putStrLn "***\nPressione Enter para ver o próximo cartão\n***"
             discard2 <- getLine
-            putStrLn putLine
-            studyCartoes (tail cartoes) (quantidade + 1) inicio
-            finalizarSessao inicio (quantidade + 1)
-            mainMenu
-
-
+            putStrLn "***\n[A]certou\n[E]rrou\n[X]Para o estudo ***"
+            feedback <- getLine
+            dataHoje <- getCurrentTime
+            if (map toUpper feedback) == "A" then do
+              let newVencimento = addDays ((fase cartao) + 1) (utctDay dataHoje)
+              let newCard = Cartao (dataCriacao cartao) (newVencimento) (fase cartao + 1) (frente cartao) (verso cartao)
+              if(fase newCard == 5) then do
+                let newPilha2 = removerCartao pilha cartao
+                editPilhaAndSave (nome newPilha2) (cartoes newPilha2)
+              else do
+                let newPilha2 = removerCartao pilha cartao
+                let newPilha = adicionarCartao newPilha2 newCard
+                editPilhaAndSave (nome pilha) (cartoes newPilha)
+              putStrLn putLine
+              studyCartoes pilha (tail cards) (quantidade + 1) inicio 
+            else if (map toUpper feedback) == "E" then do
+              if(fase cartao /= 0) then do
+                let newVencimento = addDays ((fase cartao) - 1) (utctDay dataHoje)
+                let newCard = Cartao (dataCriacao cartao) (newVencimento) (fase cartao - 1) (frente cartao) (verso cartao)
+                let newPilha2 = removerCartao pilha cartao
+                let newPilha = adicionarCartao newPilha2 newCard
+                editPilhaAndSave (nome pilha) (cartoes newPilha)
+                putStrLn putLine
+              else do
+                putStrLn putLine  
+              studyCartoes pilha (tail cards) (quantidade + 1) inicio
+            else do
+              finalizarSessao inicio (quantidade + 1)
+              mainMenu
+            
+  
   choosePilhaMenu:: IO ()
   choosePilhaMenu = do
     putStrLn "> Escolha o número da pilha onde deseja realizar a operação: "
@@ -134,20 +168,6 @@ module Main where
         mainMenu
       False -> do
         mainMenu
-
-  verifyMonth:: Int -> Int -> Int
-  verifyMonth criacao mes |mes == 1 = criacao + 61
-                          |mes == 2 = criacao + 92
-                          |mes == 3 = criacao + 120
-                          |mes == 4 = criacao + 151
-                          |mes == 5 = criacao + 181
-                          |mes == 6 = criacao + 212
-                          |mes == 7 = criacao + 242
-                          |mes == 8 = criacao + 273
-                          |mes == 9 = criacao + 303
-                          |mes == 10 = criacao + 334
-                          |mes == 11 = criacao + 265
-                          |mes == 12 = criacao + 30
 
   addCardPilha:: Pilha -> IO ()
   addCardPilha pilha = do
@@ -204,14 +224,26 @@ module Main where
       False -> do  
         putStrLn "Chegou"
 
+  stats::IO()
+  stats = do
+    sessoes <- loadSessoesDB
+    case length sessoes == 0 of
+      True -> do
+        putStrLn "Você ainda não realizou nenhuma sessão de estudo :( "
+      False -> do
+        putStrLn "Sessões: \n"
+        putStrLn (printSessoes sessoes)
+        putStrLn putLine
+        mainMenu
+
+  printSessoes:: [Sessao] -> String
+  printSessoes [] = ""
+  printSessoes (h:t) = "Data de estudo: " ++ show (dataEstudo h) ++ "\nDuracao: " ++ show (duracao h) ++ "\nCartoes Estudados: " ++ show (cartoesEstudados h) ++ "\n\n" ++ printSessoes t
     
+
+
+
   errorMenu:: IO()
   errorMenu = do
     putStrLn "################# Opção inválida! #################\n"
     mainMenu
-
-  date :: IO (Integer, Int, Int) -- :: (year, month, day)
-  date = getCurrentTime >>= return . toGregorian . utctDay
-
-  day :: IO Int
-  day = (\(_, _, d) -> d) <$> date    
