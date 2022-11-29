@@ -94,8 +94,6 @@ module Main where
             putStrLn "***\nPressione Enter para ver o verso do cartão\n***"
             discard <- getLine
             putStrLn (verso cartao)
-            putStrLn "***\nPressione Enter para ver o próximo cartão\n***"
-            discard2 <- getLine
             putStrLn "***\n[A]certou\n[E]rrou\n[X]Para o estudo ***"
             feedback <- getLine
             dataHoje <- getCurrentTime
