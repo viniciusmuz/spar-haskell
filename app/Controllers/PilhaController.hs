@@ -72,7 +72,6 @@ module Controllers.PilhaController where
 
 
   class CanSearch v where
-    -- |Searches a Deck in the database, by name.
     search :: v -> IO Pilha
   instance CanSearch String where
     search nameToSearch = do
@@ -128,8 +127,5 @@ module Controllers.PilhaController where
    
   (>-=) :: String -> Pilha -> Bool
   (>-=) cName pilha = cName == nome pilha
-
-  -- |Returns true if both decks are equals
   (>==) :: Pilha -> Pilha -> Bool
-  -- TODO: Há alguma especificidade para implementar aqui?
   (>==) deck1 deck2 = deck1 == deck2
