@@ -91,7 +91,9 @@ module Main where
 
   studyCartoes :: Pilha -> [Cartao] -> Integer -> UTCTime -> IO()
   studyCartoes pilha cards quantidade inicio
-          | length cards == 0 = mainMenu
+          | length cards == 0 = do 
+            finalizarSessao inicio (quantidade)
+            mainMenu
           | otherwise = do
             let cartao = (head cards)
             intervalos <- getIntervalos

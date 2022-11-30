@@ -1,1 +1,1 @@
-[Pilha {nome = "Ingles", cartoes = [Cartao {dataCriacao = 2022-11-29, dataVencimento = 2022-11-29, fase = 1, frente = "Hello", verso = "Oi"}]}]
+[Pilha {nome = "Ingles", cartoes = [Cartao {dataCriacao = 2022-11-29, dataVencimento = 2022-11-29, fase = 1, frente = "Hello", verso = "Oi"},Cartao {dataCriacao = 2022-11-30, dataVencimento = 2022-11-30, fase = 1, frente = "Expire", verso = "Expirar"},Cartao {dataCriacao = 2022-11-30, dataVencimento = 2022-11-30, fase = 1, frente = "Injury", verso = "Machucado"}]}]
