@@ -14,6 +14,7 @@ module Controllers.InterfaceController where
                 "[C]riar Pilha\n"++
                 "[G]erenciar Pilha\n"++
                 "[V]isualizar sessões de estudo anteriores\n"++
+                "[A]lterar intervalos\n"++
                 putLine
 
     menuPilhas:: IO String
